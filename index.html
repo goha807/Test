@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Schedule Pro | Mobile Timer Edition</title>
+    <title>Schedule Pro | System Active</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -229,7 +229,7 @@
         }
         .current-widget.visible { transform: translateX(0); }
 
-        /* --- НОВІ СТИЛІ ДЛЯ СПОВІЩЕННЯ --- */
+        /* --- Внутрішній банер --- */
         .notification-banner {
             position: fixed; top: -120px; left: 0; right: 0;
             margin: 10px auto; width: 92%; max-width: 450px;
@@ -249,7 +249,6 @@
         .notif-label { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; }
         .notif-title { font-weight: 800; font-size: 1.1rem; color: #fff; }
         .notif-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
-        /* ---------------------------------- */
 
         .modal-backdrop {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7);
@@ -274,13 +273,13 @@
 <div id="topNotification" class="notification-banner">
     <div class="notif-content">
         <span class="notif-label">🔔 Початок уроку</span>
-        <span class="notif-title" id="notifLessonName">Математика</span>
+        <span class="notif-title" id="notifLessonName">Урок</span>
     </div>
     <button class="notif-close" onclick="hideNotification()">×</button>
 </div>
 
 <header>
-    <h1>📅 SchedulePro <span style="font-size: 0.8rem; vertical-align: middle; opacity: 0.6;">v4.2 Notif</span></h1>
+    <h1>📅 SchedulePro <span style="font-size: 0.8rem; vertical-align: middle; opacity: 0.6;">v4.4 Final</span></h1>
     
     <div class="week-switcher">
         <button class="week-btn" onclick="changeWeek(-1)">◀</button>
@@ -356,13 +355,19 @@
                 </select>
             </div>
             
-            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 10px;">
-                <label style="margin:0; cursor:pointer;" for="notifToggle">🔔 Сповіщення про початок</label>
-                <input type="checkbox" id="notifToggle" style="width: 20px; height: 20px; margin: 0; cursor: pointer;" onchange="toggleNotifications(this.checked)">
+            <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <label style="margin:0; cursor:pointer; font-weight:700;" for="notifToggle">🔔 Системні сповіщення</label>
+                    <input type="checkbox" id="notifToggle" style="width: 20px; height: 20px; margin: 0; cursor: pointer;" onchange="toggleNotifications(this.checked)">
+                </div>
+                <button class="btn btn-primary" style="width:100%; justify-content:center;" onclick="testNotification()">📢 ТЕСТ СПОВІЩЕННЯ</button>
+                <p style="font-size:0.75rem; color:#94a3b8; margin:8px 0 0 0; line-height:1.4;">
+                    * Якщо кнопка не працює, перевірте, чи не заблокував браузер сповіщення (іконка замочка в адресному рядку).
+                </p>
             </div>
 
         </div>
-        <button class="btn btn-primary" style="width:100%; margin-top:30px;" onclick="closeModal('settingsModal')">Готово</button>
+        <button class="btn" style="width:100%; margin-top:30px; background: rgba(255,255,255,0.1);" onclick="closeModal('settingsModal')">Закрити</button>
     </div>
 </div>
 
@@ -370,31 +375,76 @@
     const days = ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"];
     const icons = ["⚡", "🔥", "💎", "🌟", "🍀", "🎉", "🎐"];
     
-    // Дані
     let schedule = JSON.parse(localStorage.getItem('gh-schedule')) || {};
     let userSettings = JSON.parse(localStorage.getItem('gh-settings')) || { accent: '#38bdf8', bg: 'default', notifications: true };
     
-    // Стан
     let currentEditKey = null;
     let activeLessonGlobal = null;
     let currentWeekIndex = 0; 
-    let lastNotifiedLesson = null; // Запам'ятовуємо, про що вже сповістили
+    let lastNotifiedLesson = null; 
 
     function init() { 
         migrateDataIfNeeded();
         applySettings(); 
-        if(document.getElementById('bgSelect')) {
-            document.getElementById('bgSelect').value = userSettings.bg || 'default';
-        }
-        
-        // Встановлюємо галочку налаштувань
-        if(document.getElementById('notifToggle')) {
-            document.getElementById('notifToggle').checked = userSettings.notifications !== false; // За замовчуванням true
+        if(document.getElementById('bgSelect')) document.getElementById('bgSelect').value = userSettings.bg || 'default';
+        if(document.getElementById('notifToggle')) document.getElementById('notifToggle').checked = userSettings.notifications !== false; 
+
+        // Запит дозволу при старті, якщо вже було включено
+        if (userSettings.notifications !== false && "Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+            // Браузери блокують це без кліку користувача, але спробуємо
+            try { Notification.requestPermission(); } catch(e){}
         }
 
         render(); 
         setInterval(updateWidgetTimerOnly, 1000); 
     }
+
+    // === ТЕСТ СПОВІЩЕНЬ ===
+    function testNotification() {
+        if (!("Notification" in window)) {
+            alert("Ваш браузер не підтримує сповіщення!");
+            return;
+        }
+
+        if (Notification.permission === "granted") {
+            sendSystemNotification("Це тестове повідомлення!");
+            showNotification("Перевірка зв'язку!");
+        } else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    sendSystemNotification("Ура! Дозвіл отримано.");
+                } else {
+                    alert("Ви відхилили дозвіл на сповіщення.");
+                }
+            });
+        } else {
+            alert("Сповіщення заблоковані в налаштуваннях браузера. Натисніть на іконку 'налаштування' або 'замок' біля адреси сайту і дозвольте їх.");
+        }
+    }
+
+    function sendSystemNotification(text) {
+        // Вібрація (тільки Android)
+        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
+        const notification = new Notification("📅 SchedulePro", {
+            body: text,
+            icon: "https://cdn-icons-png.flaticon.com/512/2693/2693507.png",
+            vibrate: [200, 100, 200],
+            requireInteraction: true // Щоб висіло поки не закриють (на ПК)
+        });
+        
+        notification.onclick = function() {
+            window.focus();
+            this.close();
+        };
+    }
+
+    function toggleNotifications(val) {
+        userSettings.notifications = val;
+        saveSettings();
+        if (val) testNotification(); // Одразу пробуємо отримати дозвіл
+    }
+    // ======================
 
     function changeWeek(direction) {
         currentWeekIndex = (currentWeekIndex + direction + 2) % 2;
@@ -417,9 +467,7 @@
                 changed = true;
             }
         });
-        if (changed) {
-            localStorage.setItem('gh-schedule', JSON.stringify(schedule));
-        }
+        if (changed) localStorage.setItem('gh-schedule', JSON.stringify(schedule));
     }
 
     function exportToFile() {
@@ -494,13 +542,10 @@
         if (isToday && currentTime >= start && currentTime < end) {
             card.classList.add('active');
             card.id = 'activeCard';
-            
             const percent = ((currentTime - start) / (end - start)) * 100;
             progressHtml = `<div class="progress-container"><div class="progress-bar" id="activeProgressBar" style="width:${percent}%"></div></div>`;
-            
             const remaining = end - currentTime;
             timerHtml = `<div id="cardTimer" class="card-timer-badge">⏳ ${remaining} хв</div>`;
-
             activeLessonGlobal = { ...data, remaining: remaining, startMin: start, endMin: end, key: key };
         }
 
@@ -525,7 +570,6 @@
         const cardTimer = document.getElementById('cardTimer'); 
         
         if (activeLessonGlobal) {
-            // Перевірка, чи урок триває
             if (currentTime >= activeLessonGlobal.startMin && currentTime < activeLessonGlobal.endMin) {
                 w.classList.add('visible');
                 document.getElementById('widgetName').textContent = activeLessonGlobal.name;
@@ -534,9 +578,7 @@
                 const remaining = activeLessonGlobal.endMin - currentTime;
                 document.getElementById('widgetCountdown').textContent = `${remaining} хв`;
                 
-                if(cardTimer) {
-                    cardTimer.textContent = `⏳ ${remaining} хв`;
-                }
+                if(cardTimer) cardTimer.textContent = `⏳ ${remaining} хв`;
 
                 const linkBtn = document.getElementById('widgetLink');
                 if(activeLessonGlobal.link) { linkBtn.style.display = 'flex'; linkBtn.href = activeLessonGlobal.link; }
@@ -548,17 +590,12 @@
                     progressBar.style.width = `${percent}%`;
                 }
 
-                // --- ЛОГІКА СПОВІЩЕННЯ ---
-                // Якщо налаштування ввімкнені, і це початок уроку (перша хвилина), і ми ще не сповіщали про цей урок
-                if (userSettings.notifications !== false && 
-                    currentTime === activeLessonGlobal.startMin && 
-                    lastNotifiedLesson !== activeLessonGlobal.key) {
-                    
+                // Перевірка часу для сповіщення
+                if (userSettings.notifications !== false && currentTime === activeLessonGlobal.startMin && lastNotifiedLesson !== activeLessonGlobal.key) {
                     showNotification(activeLessonGlobal.name);
-                    lastNotifiedLesson = activeLessonGlobal.key; // Запам'ятати, щоб не спамити
+                    sendSystemNotification(`Початок уроку: ${activeLessonGlobal.name}`);
+                    lastNotifiedLesson = activeLessonGlobal.key;
                 }
-                // -------------------------
-
             } else {
                 activeLessonGlobal = null;
                 w.classList.remove('visible');
@@ -566,7 +603,6 @@
             }
         } else {
             w.classList.remove('visible');
-            // Щоб зловити початок уроку, якщо сторінка відкрита
             const currentDay = (now.getDay() + 6) % 7;
             for(let sIdx = 0; sIdx < 8; sIdx++) {
                 const key = `${currentWeekIndex}-${currentDay}-${sIdx}`;
@@ -575,7 +611,7 @@
                     const s = timeToMin(lesson.start);
                     const e = timeToMin(lesson.end);
                     if(currentTime >= s && currentTime < e) {
-                        render(); // Перемалювати, щоб активувати урок
+                        render(); 
                         break;
                     }
                 }
@@ -583,27 +619,16 @@
         }
     }
 
-    // --- ФУНКЦІЇ СПОВІЩЕННЯ ---
     function showNotification(name) {
         const notif = document.getElementById('topNotification');
         document.getElementById('notifLessonName').textContent = name;
         notif.classList.add('show');
-        
-        // Автоматично сховати через 5 секунд
-        setTimeout(() => {
-            hideNotification();
-        }, 5000);
+        setTimeout(() => hideNotification(), 5000);
     }
 
     function hideNotification() {
         document.getElementById('topNotification').classList.remove('show');
     }
-
-    function toggleNotifications(val) {
-        userSettings.notifications = val;
-        saveSettings();
-    }
-    // ----------------------------
 
     function timeToMin(t) { if(!t) return 0; const [h, m] = t.split(':').map(Number); return h * 60 + m; }
     
@@ -621,9 +646,7 @@
         const list = document.getElementById('subjectsList');
         list.innerHTML = '';
         const subjects = new Set();
-        Object.values(schedule).forEach(item => {
-            if(item.name) subjects.add(item.name);
-        });
+        Object.values(schedule).forEach(item => { if(item.name) subjects.add(item.name); });
         subjects.forEach(subj => {
             const opt = document.createElement('option');
             opt.value = subj;
@@ -635,7 +658,6 @@
         currentEditKey = key; 
         const data = schedule[key];
         const slotIndex = parseInt(key.split('-')[2]);
-        
         const suggested = getSuggestedTimes(slotIndex);
         updateSubjectsList();
 
@@ -698,3 +720,4 @@
 </script>
 </body>
 </html>
+
