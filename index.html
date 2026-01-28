@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schedule Pro | System Active</title>
+    <title>Ultimate Schedule Pro | Mobile Timer Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -90,7 +90,7 @@
         .week-label {
             font-weight: 800;
             padding: 0 15px;
-            min-width: 120px;
+            min-width: 150px;
             text-align: center;
             color: var(--accent);
         }
@@ -119,7 +119,7 @@
 
         .schedule-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 25px;
             max-width: 1600px;
             margin: 0 auto;
@@ -154,17 +154,10 @@
             background: rgba(255, 255, 255, 0.03);
         }
 
-        .lesson-card:hover {
-            border-color: rgba(56, 189, 248, 0.5);
-            background: rgba(255,255,255,0.08);
-            transform: scale(1.02);
-        }
-
         .lesson-card.active {
             border-color: var(--success);
             border-left-color: var(--success);
             background: linear-gradient(135deg, rgba(46, 213, 115, 0.15) 0%, rgba(30, 41, 59, 0.9) 100%);
-            box-shadow: 0 10px 40px -10px rgba(46, 213, 115, 0.3);
         }
 
         .time-badge {
@@ -193,6 +186,16 @@
             animation: pulse-green 2s infinite;
         }
 
+        .lesson-note {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-top: 8px;
+            font-style: italic;
+            display: block;
+            border-top: 1px solid var(--glass-border);
+            padding-top: 8px;
+        }
+
         @keyframes pulse-green {
             0% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.4); }
             70% { box-shadow: 0 0 0 6px rgba(46, 213, 115, 0); }
@@ -200,17 +203,6 @@
         }
 
         .lesson-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; display: block; }
-
-        .lesson-link {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: color 0.2s;
-        }
-        .lesson-link:hover { color: var(--accent); }
 
         .progress-container { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; background: rgba(255,255,255,0.05); overflow: hidden; }
         .progress-bar { height: 100%; background: var(--success); transition: width 1s linear; }
@@ -229,53 +221,239 @@
         }
         .current-widget.visible { transform: translateX(0); }
 
-        /* --- Внутрішній банер --- */
-        .notification-banner {
-            position: fixed; top: -120px; left: 0; right: 0;
-            margin: 10px auto; width: 92%; max-width: 450px;
-            padding: 15px 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            z-index: 1000;
-            background: rgba(30, 41, 59, 0.95);
-            border: 1px solid var(--accent);
-            border-left: 5px solid var(--accent);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border-radius: 16px;
-            transition: top 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            backdrop-filter: blur(10px);
-        }
-        .notification-banner.show { top: 10px; }
-        .notif-content { display: flex; flex-direction: column; }
-        .notif-label { font-size: 0.75rem; color: var(--accent); font-weight: 700; text-transform: uppercase; }
-        .notif-title { font-weight: 800; font-size: 1.1rem; color: #fff; }
-        .notif-close { background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; opacity: 0.7; }
-
         .modal-backdrop {
             position: fixed; inset: 0; background: rgba(0,0,0,0.7);
             backdrop-filter: blur(8px); display: none; justify-content: center;
             align-items: center; z-index: 200; opacity: 0; transition: 0.3s;
         }
-        .modal { width: 90%; max-width: 480px; padding: 30px; transform: scale(0.9); transition: 0.3s; }
+        .modal { width: 90%; max-width: 480px; padding: 30px; transform: scale(0.9); transition: 0.3s; overflow-y: auto; max-height: 90vh; }
         .modal-backdrop.open { opacity: 1; }
         .modal-backdrop.open .modal { transform: scale(1); }
 
-        input, select { width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); color: #fff; padding: 14px; border-radius: 12px; margin-top: 5px; outline: none; }
-        #fileInput { display: none; }
+        input, select, textarea { width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid var(--glass-border); color: #fff; padding: 14px; border-radius: 12px; margin-top: 5px; outline: none; font-family: inherit; }
+        textarea { resize: vertical; min-height: 80px; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .lang-switch {
+            position: fixed; top: 20px; right: 20px; z-index: 1000;
+            background: rgba(0,0,0,0.5); border-radius: 50px; padding: 5px; display: flex; gap: 5px;
+        }
+        .lang-btn { padding: 5px 12px; border-radius: 50px; border: none; background: transparent; color: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 800; }
+        .lang-btn.active { background: var(--accent); color: #000; }
     </style>
 </head>
 <body data-edit-mode="false">
 
-<div id="topNotification" class="notification-banner">
-    <div class="notif-content">
-        <span class="notif-label">🔔 Початок уроку</span>
-        <span class="notif-title" id="notifLessonName">Урок</span>
+<div class="lang-switch glass">
+    <button class="lang-btn" id="lang-uk" onclick="setLanguage('uk')">UK</button>
+    <button class="lang-btn" id="lang-ru" onclick="setLanguage('ru')">RU</button>
+</div>
+
+<header>
+    <h1>📅 SchedulePro <span style="font-size: 0.8rem; vertical-align: middle; opacity: 0.6;">v4.5 Pro</span></h1>
+    
+    <div class="week-switcher">
+        <button class="week-btn" onclick="changeWeek(-1)">◀</button>
+        <div class="week-label" id="currentWeekLabel">...</div>
+        <button class="week-btn" onclick="changeWeek(1)">▶</button>
     </div>
-    <button class="notif-close" onclick="hideNotification()">×</button>
+
+    <div class="controls">
+        <button class="btn" onclick="document.getElementById('fileInput').click()" id="btn-open">📤 Відкрити</button>
+        <button class="btn" onclick="exportToFile()" id="btn-save">📥 Зберегти</button>
+        <button class="btn" onclick="openSettings()" id="btn-view">🎨 Вигляд</button>
+        <button class="btn btn-outline" id="toggleEdit" onclick="toggleEditMode()">✏️ Ред.</button>
+    </div>
+    <input type="file" id="fileInput" accept=".json" onchange="importFromFile(this)">
+</header>
+
+<div class="schedule-grid" id="grid"></div>
+
+<div class="current-widget glass" id="activeWidget">
+    <div style="font-size: 0.7rem; text-transform: uppercase; color: var(--accent); font-weight: 800; margin-bottom: 10px;" id="txt-now">Зараз триває</div>
+    <div id="widgetName" style="font-size: 1.2rem; font-weight: 800; margin-bottom: 10px;">Назва</div>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <span id="widgetTimes" style="font-family: monospace; opacity: 0.7;">08:30 - 09:15</span>
+        <span id="widgetCountdown" style="color: var(--success); font-weight: 800; font-size: 1.1rem;">00 хв</span>
+    </div>
+    <a id="widgetLink" href="#" target="_blank" class="btn-primary btn" style="margin-top: 15px; justify-content: center; padding: 8px;" id="txt-join">🎥 Приєднатися</a>
+</div>
+
+<div class="modal-backdrop" id="modal">
+    <div class="modal glass">
+        <h2 style="margin-top:0" id="txt-lesson-settings">Налаштування уроку</h2>
+        <div style="display:grid; gap:15px;">
+            <div>
+                <label style="font-size:0.8rem; opacity:0.6" id="txt-subject">Предмет</label>
+                <input type="text" id="nameInp" list="subjectsList" oninput="autoFillLink()">
+                <datalist id="subjectsList"></datalist>
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                <div><label style="font-size:0.8rem; opacity:0.6" id="txt-start">Початок</label><input type="time" id="startInp"></div>
+                <div><label style="font-size:0.8rem; opacity:0.6" id="txt-end">Кінець</label><input type="time" id="endInp"></div>
+            </div>
+            <div><label style="font-size:0.8rem; opacity:0.6" id="txt-link">Посилання</label><input type="text" id="linkInp" placeholder="Zoom/Meet link"></div>
+            <div><label style="font-size:0.8rem; opacity:0.6" id="txt-note">Коментар / Нотатка</label><textarea id="noteInp" placeholder="..."></textarea></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:25px;">
+            <button class="btn btn-primary" style="flex:2" onclick="saveLesson()" id="txt-btn-save">Зберегти</button>
+            <button class="btn" style="flex:1; background:var(--danger)" onclick="deleteLesson()">🗑️</button>
+            <button class="btn" style="flex:1" onclick="closeModal('modal')" id="txt-btn-cancel">Скасувати</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-backdrop" id="settingsModal">
+    <div class="modal glass">
+        <h2 id="txt-style">Стилізація</h2>
+        <div style="display:grid; gap:20px;">
+            <div>
+                <label id="txt-theme-color">Колір теми</label>
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <div style="width:35px; height:35px; border-radius:10px; background:#38bdf8; cursor:pointer;" onclick="setAccent('#38bdf8')"></div>
+                    <div style="width:35px; height:35px; border-radius:10px; background:#2ed573; cursor:pointer;" onclick="setAccent('#2ed573')"></div>
+                    <div style="width:35px; height:35px; border-radius:10px; background:#ffa502; cursor:pointer;" onclick="setAccent('#ffa502')"></div>
+                    <div style="width:35px; height:35px; border-radius:10px; background:#ff4757; cursor:pointer;" onclick="setAccent('#ff4757')"></div>
+                    <div style="width:35px; height:35px; border-radius:10px; background:#a29bfe; cursor:pointer;" onclick="setAccent('#a29bfe')"></div>
+                </div>
+            </div>
+            <div>
+                <label id="txt-wallpapers">Шпалери</label>
+                <select id="bgSelect" onchange="changeBackground(this.value)">
+                    <option value="default">🌌 Нічне небо</option>
+                    <option value="sunset">🌇 Захід сонця</option>
+                    <option value="forest">🌲 Глибокий ліс</option>
+                    <option value="black">🌑 Pure Black (OLED)</option>
+                </select>
+            </div>
+            <div style="display:flex; justify-content: space-between; align-items: center;">
+                <label id="txt-notify">🔔 Сповіщення про уроки</label>
+                <input type="checkbox" id="notifyToggle" style="width:25px; height:25px;" onchange="toggleNotifications(this.checked)">
+            </div>
+        </div>
+        <button class="btn btn-primary" style="width:100%; margin-top:30px;" onclick="closeModal('settingsModal')" id="txt-btn-done">Готово</button>
+    </div>
+</div>
+
+<script>
+    const i18n = {
+        uk: {
+            days: ["Понеділок", "Вівторок", "Середа", "Четвер", "П'ятниця", "Субота", "Неділя"],
+            weeks: ["Тиждень А (Перший)", "Тиждень Б (Другий)"],
+            empty: "порожньо",
+            now: "Зараз триває",
+            join: "🎥 Приєднатися",
+            lessonSettings: "Налаштування уроку",
+            subject: "Предмет", start: "Початок", end: "Кінець", link: "Посилання", note: "Нотатка",
+            btnSave: "Зберегти", btnCancel: "Скасувати", btnDone: "Готово",
+            style: "Стилізація", themeColor: "Колір теми", wallpapers: "Шпалери", notify: "🔔 Сповіщення",
+            btnOpen: "📤 Відкрити", btnSaveFile: "📥 Зберегти", btnView: "🎨 Вигляд", btnEdit: "✏️ Ред.",
+            min: "хв", notifyTitle: "Урок починається!", notifyBody: (name) => `Час на ${name}!`
+        },
+        ru: {
+            days: ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"],
+            weeks: ["Неделя А (Первая)", "Неделя Б (Вторая)"],
+            empty: "пусто",
+            now: "Сейчас идет",
+            join: "🎥 Присоединиться",
+            lessonSettings: "Настройки урока",
+            subject: "Предмет", start: "Начало", end: "Конец", link: "Ссылка", note: "Заметка",
+            btnSave: "Сохранить", btnCancel: "Отмена", btnDone: "Готово",
+            style: "Стилизация", themeColor: "Цвет темы", wallpapers: "Обои", notify: "🔔 Уведомления",
+            btnOpen: "📤 Открыть", btnSaveFile: "📥 Сохранить", btnView: "🎨 Вид", btnEdit: "✏️ Ред.",
+            min: "мин", notifyTitle: "Урок начинается!", notifyBody: (name) => `Пора на ${name}!`
+        }
+    };
+
+    const icons = ["⚡", "🔥", "💎", "🌟", "🍀", "🎉", "🎐"];
+    let schedule = JSON.parse(localStorage.getItem('gh-schedule')) || {};
+    let userSettings = JSON.parse(localStorage.getItem('gh-settings')) || { accent: '#38bdf8', bg: 'default', lang: 'uk', notify: true };
+    
+    let currentEditKey = null;
+    let activeLessonGlobal = null;
+    let currentWeekIndex = 0;
+    let notifiedLessons = new Set(); // Щоб не спамити сповіщеннями кожну секунду хвилини
+
+    function init() {
+        applySettings();
+        setLanguage(userSettings.lang);
+        if(userSettings.notify) checkNotificationPermission();
+        
+        setInterval(updateSystem, 1000); 
+        render();
+    }
+
+    function setLanguage(lang) {
+        userSettings.lang = lang;
+        localStorage.setItem('gh-settings', JSON.stringify(userSettings));
+        
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`lang-${lang}`).classList.add('active');
+        
+        // Оновлення тексту
+        const t = i18n[lang];
+        document.getElementById('btn-open').textContent = t.btnOpen;
+        document.getElementById('btn-save').textContent = t.btnSaveFile;
+        document.getElementById('btn-view').textContent = t.btnView;
+        document.getElementById('toggleEdit').textContent = t.btnEdit;
+        document.getElementById('txt-now').textContent = t.now;
+        document.getElementById('widgetLink').textContent = t.join;
+        document.getElementById('txt-lesson-settings').textContent = t.lessonSettings;
+        document.getElementById('txt-subject').textContent = t.subject;
+        document.getElementById('txt-start').textContent = t.start;
+        document.getElementById('txt-end').textContent = t.end;
+        document.getElementById('txt-link').textContent = t.link;
+        document.getElementById('txt-note').textContent = t.note;
+        document.getElementById('txt-btn-save').textContent = t.btnSave;
+        document.getElementById('txt-btn-cancel').textContent = t.btnCancel;
+        document.getElementById('txt-style').textContent = t.style;
+        document.getElementById('txt-theme-color').textContent = t.themeColor;
+        document.getElementById('txt-wallpapers').textContent = t.wallpapers;
+        document.getElementById('txt-notify').textContent = t.notify;
+        document.getElementById('txt-btn-done').textContent = t.btnDone;
+        
+        render();
+    }
+
+    function checkNotificationPermission() {
+        if ("Notification" in window && Notification.permission !== "granted") {
+            Notification.requestPermission();
+        }
+    }
+
+    function toggleNotifications(val) {
+        userSettings.notify = val;
+        if(val) checkNotificationPermission();
+        saveSettings();
+    }
+
+    function changeWeek(direction) {
+        currentWeekIndex = (currentWeekIndex + direction + 2) % 2;
+        render();
+    }
+
+    function render() {
+        const t = i18n[userSettings.lang];
+        document.getElementById('currentWeekLabel').textContent = t.weeks[currentWeekIndex];
+        
+        const grid = document.getElementById('grid');
+        grid.innerHTML = ''; 
+        
+        const now = new Date();
+        const currentTime = now.getHours() * 60 + now.getMinutes();
+        const currentDay = (now.getDay() + 6) % 7; 
+
+        t.days.forEach((day, dIdx) => {
+            const isToday = dIdx === currentDay;
+            const dayCol = document.createElement('div');
+            dayCol.className = `day-column ${isToday ? 'is-today' : ''}`;
+            dayCol.innerHTML = `<div class="day-title"><span>${icons[dIdx]}</span> ${day}</div>`;
+            
+            for(let sIdx = 0; sIdx < 8; sI class="notif-close" onclick="hideNotification()">×</button>
 </div>
 
 <header>
