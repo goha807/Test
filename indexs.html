@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treasuri Hunt - Полювання на Скарби</title>
+    <style>
+        :root {
+            --primary: #ffd700;
+            --bg: #1a1a2e;
+            --panel: #16213e;
+            --accent: #e94560;
+            --text: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--panel);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 3px solid var(--primary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        h1 { margin: 0; color: var(--primary); text-transform: uppercase; letter-spacing: 2px; }
+        .stats { margin-top: 10px; font-size: 1.2em; }
+        .coin-icon { color: var(--primary); }
+
+        /* Navigation */
+        nav {
+            display: flex;
+            justify-content: center;
+            background: #0f3460;
+            padding: 10px;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: 0.3s;
+        }
+
+        nav button:hover, nav button.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            flex: 1;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .section { display: none; animation: fadeIn 0.5s; }
+        .section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Containers (Cards) */
+        .container-card {
+            background: var(--panel);
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        .container-card.locked { opacity: 0.8; border-left: 5px solid var(--accent); }
+        .container-card.unlocked { border-left: 5px solid #4caf50; }
+
+        input[type="text"] {
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+            width: 70%;
+            margin-top: 10px;
+        }
+
+        button.action-btn {
+            padding: 10px 20px;
+            background: var(--primary);
+            border: none;
+            border-radius: 5px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button.action-btn:hover { transform: scale(1.05); }
+        button.action-btn:disabled { background: #555; cursor: not-allowed; }
+
+        /* Shop Grid */
+        .shop-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .shop-item {
+            background: var(--panel);
+            padding: 15px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid var(--primary);
+        }
+
+        /* Leaderboard */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--panel);
+        }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: var(--primary); }
+        tr:nth-child(even) { background-color: #1a1a2e; }
+
+        /* Notification */
+        #notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Treasuri Hunt</h1>
+    <div class="stats">
+        Гаманець: <span id="coin-display">0</span> <span class="coin-icon">●</span>
+        | Титул: <span id="title-display">Новачок</span>
+    </div>
+</header>
+
+<nav>
+    <button onclick="showSection('game')" class="active">Полювання</button>
+    <button onclick="showSection('shop')">Магазин</button>
+    <button onclick="showSection('leaderboard')">Лідерборд</button>
+    <button onclick="showSection('social')">Друзі</button>
+</nav>
+
+<main>
+    <div id="game" class="section active">
+        <h2>📂 Сховані Контейнери</h2>
+        <p>Розгадай коди, щоб відкрити контейнери та отримати монети.</p>
+        
+        <div class="container-card locked" id="cont-1">
+            <h3>📜 container1.txt (Стартовий)</h3>
+            <p>Введи пароль "START", щоб отримати перші монети.</p>
+            <input type="text" id="input-1" placeholder="Введіть код...">
+            <button class="action-btn" onclick="unlock(1, 'START', 50)">Відкрити</button>
+        </div>
+
+        <div class="container-card locked" id="cont-2">
+            <h3>🧩 puzzle_box.py (Загадка)</h3>
+            <p>"Я завжди йду вгору, але ніколи не спускаюся. Що я?"</p>
+            <input type="text" id="input-2" placeholder="Відповідь...">
+            <button class="action-btn" onclick="unlock(2, 'вік', 100)">Відкрити</button>
+        </div>
+
+        <div class="container-card locked" id="cont-3">
+            <h3>🧮 math_problem.md</h3>
+            <p>Скільки буде 5 * 5 + 25 - 10?</p>
+            <input type="text" id="input-3" placeholder="Число...">
+            <button class="action-btn" onclick="unlock(3, '40', 150)">Відкрити</button>
+        </div>
+    </div>
+
+    <div id="shop" class="section">
+        <h2>🛒 Магазин Подарунків</h2>
+        <div class="shop-grid">
+            <div class="shop-item">
+                <h3>👑 Титул "Король"</h3>
+                <p>Ціна: 200 монет</p>
+                <button class="action-btn" onclick="buyItem('title', 'Король Скарбів', 200)">Купити</button>
+            </div>
+            <div class="shop-item">
+                <h3>🛡️ Срібний Скін</h3>
+                <p>Змінює тему.</p>
+                <p>Ціна: 150 монет</p>
+                <button class="action-btn" onclick="buyItem('skin', 'silver', 150)">Купити</button>
+            </div>
+            <div class="shop-item">
+                <h3>🎁 Розіграш (Giveaway)</h3>
+                <p>Шанс виграти 500 монет!</p>
+                <p>Ціна квитка: 50 монет</p>
+                <button class="action-btn" onclick="playLottery()">Грати</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="leaderboard" class="section">
+        <h2>🏆 Топ Гравців</h2>
+        <table>
+            <thead>
+                <tr><th>Місце</th><th>Гравець</th><th>Монети</th><th>Титул</th></tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                </tbody>
+        </table>
+    </div>
+
+    <div id="social" class="section">
+        <h2>🤝 Поділитися монетами</h2>
+        <div class="container-card">
+            <p>Надіслати монети другу:</p>
+            <input type="text" placeholder="Ім'я друга (наприклад, Alex)" id="friend-name">
+            <input type="number" placeholder="Сума" id="send-amount" style="width: 100px; padding: 10px;">
+            <button class="action-btn" onclick="sendCoins()">Надіслати</button>
+        </div>
+    </div>
+</main>
+
+<div id="notification">Повідомлення</div>
+
+<script>
+    // --- STATE MANAGEMENT ---
+    let player = {
+        coins: 0,
+        title: "Новачок",
+        unlocked: [], // IDs of unlocked containers
+        skin: "default"
+    };
+
+    // Load from LocalStorage
+    if(localStorage.getItem('treasuriPlayer')) {
+        player = JSON.parse(localStorage.getItem('treasuriPlayer'));
+        applySkin(player.skin);
+    }
+
+    // --- CORE FUNCTIONS ---
+    function updateUI() {
+        document.getElementById('coin-display').innerText = player.coins;
+        document.getElementById('title-display').innerText = player.title;
+        
+        // Disable opened containers
+        player.unlocked.forEach(id => {
+            const card = document.getElementById(`cont-${id}`);
+            if(card) {
+                card.classList.remove('locked');
+                card.classList.add('unlocked');
+                card.innerHTML = `<h3>✅ Відкрито!</h3><p>Ви вже забрали скарб з цього контейнера.</p>`;
+            }
+        });
+        
+        saveData();
+    }
+
+    function saveData() {
+        localStorage.setItem('treasuriPlayer', JSON.stringify(player));
+        generateLeaderboard(); // Update player position
+    }
+
+    function notify(msg) {
+        const n = document.getElementById('notification');
+        n.innerText = msg;
+        n.style.display = 'block';
+        setTimeout(() => { n.style.display = 'none'; }, 3000);
+    }
+
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // --- GAME LOGIC ---
+    function unlock(id, code, reward) {
+        if (player.unlocked.includes(id)) return;
+
+        const input = document.getElementById(`input-${id}`).value.trim().toLowerCase();
+        if (input === code.toLowerCase()) {
+            player.coins += reward;
+            player.unlocked.push(id);
+            notify(`🎉 Правильно! Отримано ${reward} монет!`);
+            updateUI();
+        } else {
+            notify("❌ Неправильний код. Спробуй ще!");
+        }
+    }
+
+    // --- SHOP LOGIC ---
+    function buyItem(type, value, price) {
+        if (player.coins >= price) {
+            player.coins -= price;
+            if (type === 'title') player.title = value;
+            if (type === 'skin') {
+                player.skin = value;
+                applySkin(value);
+            }
+            notify(`🛒 Придбано успішно!`);
+            updateUI();
+        } else {
+            notify("⚠️ Недостатньо монет!");
+        }
+    }
+
+    function playLottery() {
+        if (player.coins < 50) { notify("⚠️ Треба 50 монет!"); return; }
+        player.coins -= 50;
+        
+        // 30% chance to win
+        if (Math.random() < 0.3) {
+            player.coins += 500;
+            notify("🎰 ДЖЕКПОТ! Ви виграли 500 монет!");
+        } else {
+            notify("😢 Не пощастило. Спробуйте ще.");
+        }
+        updateUI();
+    }
+
+    function applySkin(skin) {
+        const root = document.documentElement;
+        if (skin === 'silver') {
+            root.style.setProperty('--primary', '#c0c0c0');
+            root.style.setProperty('--accent', '#4b6cb7');
+        }
+    }
+
+    // --- MULTIPLAYER SIMULATION ---
+    function sendCoins() {
+        const amount = parseInt(document.getElementById('send-amount').value);
+        const name = document.getElementById('friend-name').value;
+
+        if (!name || isNaN(amount) || amount <= 0) {
+            notify("⚠️ Перевірте дані!");
+            return;
+        }
+
+        if (player.coins >= amount) {
+            player.coins -= amount;
+            notify(`📤 Відправлено ${amount} монет гравцю ${name}!`);
+            updateUI();
+        } else {
+            notify("⚠️ Недостатньо монет!");
+        }
+    }
+
+    function generateLeaderboard() {
+        // Fake bots + Current Player
+        let bots = [
+            { name: "CyberWolf", coins: 5000, title: "Легенда" },
+            { name: "PixelHunter", coins: 3400, title: "Майстер" },
+            { name: "CodeNinja", coins: 1200, title: "Новачок" }
+        ];
+        
+        // Add current player to list for sorting
+        let allPlayers = [...bots, { name: "ВИ (You)", coins: player.coins, title: player.title }];
+        
+        // Sort by coins
+        allPlayers.sort((a, b) => b.coins - a.coins);
+
+        const tbody = document.getElementById('leaderboard-body');
+        tbody.innerHTML = '';
+        
+        allPlayers.forEach((p, index) => {
+            let row = `<tr>
+                <td>#${index + 1}</td>
+                <td>${p.name}</td>
+                <td>${p.coins}</td>
+                <td>${p.title}</td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    // Init
+    updateUI();
+    generateLeaderboard();
+
+</script>
+
+</body>
+</html>
